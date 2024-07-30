@@ -1,0 +1,59 @@
+
+
+exclude: \.(csv|sql)$|devcontainer\.json
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      # - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-yaml
+        args: [--unsafe]
+      - id: end-of-file-fixer
+        exclude: "__snapshots__/"
+      - id: fix-encoding-pragma
+        args: [--remove]
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+        exclude: "__snapshots__/"
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.4.9
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [--fix]
+      # Run the formatter.
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v1.8.0"
+    hooks:
+      - id: mypy
+        exclude: migrations/|commands/|scripts/|sandbox/|samples|sdk
+        additional_dependencies:
+          - "pygithub"
+          - "pytest"
+          - "syrupy"
+          - "typer"
+          - "jinja2"
+          - "gitpython"
+          - "types-PyYAML"
+          - "devtools"
+        args:
+          [
+            --pretty,
+            --show-error-codes,
+            --implicit-optional,
+            --follow-imports=silent,
+            --warn-redundant-casts,
+            --warn-unused-ignores,
+            --disallow-any-generics,
+            --check-untyped-defs,
+            --no-implicit-reexport,
+            --disallow-untyped-defs,
+          ]
