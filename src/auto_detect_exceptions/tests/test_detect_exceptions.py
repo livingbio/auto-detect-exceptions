@@ -1,21 +1,22 @@
 import pytest
-
+from typing import Any
 from ..detect import detect_function_exceptions
+from typing import Callable
 
 
-def func_value_error(x):
+def func_value_error(x: Any) -> Any:
     raise ValueError("An error occurred")
 
 
-def func_type_error(x):
+def func_type_error(x: Any) -> Any:
     raise TypeError("Another error occurred")
 
 
-def func_no_error():
+def func_no_error() -> Any:
     return "No error"
 
 
-def func_multiple_errors(x):
+def func_multiple_errors(x: Any) -> Any:
     if x == 0:
         raise ValueError("x cannot be zero")
     elif x == 1:
@@ -24,7 +25,7 @@ def func_multiple_errors(x):
         raise RuntimeError("General error")
 
 
-def func_nested_errors(x):
+def func_nested_errors(x: Any) -> Any:
     try:
         if x == 0:
             raise ValueError("x cannot be zero")
@@ -40,7 +41,7 @@ def func_nested_errors(x):
 
 
 # Test case 6: Function with nested try-except
-def func_nested_try_except(x):
+def func_nested_try_except(x: Any) -> Any:
     try:
         try:
             if x == 0:
@@ -54,12 +55,12 @@ def func_nested_try_except(x):
 
 
 # Test case 7: Function with no arguments but raises exceptions
-def func_with_no_arguments():
+def func_with_no_arguments() -> Any:
     raise AttributeError("Attribute error occurred")
 
 
 # Test case 8: Function with try, except, finally, else
-def func_with_try_except_finally_else(x):
+def func_with_try_except_finally_else(x: Any) -> Any:
     try:
         if x == 0:
             raise ValueError("x cannot be zero")
@@ -75,8 +76,8 @@ def func_with_try_except_finally_else(x):
 
 
 # Test case 9: Function with nested function calls that raise exceptions
-def func_with_nested_function_calls(x):
-    def nested_func(y):
+def func_with_nested_function_calls(x: Any) -> Any:
+    def nested_func(y: Any) -> Any:
         if y == 0:
             raise ValueError("y cannot be zero")
         elif y == 1:
@@ -88,19 +89,20 @@ def func_with_nested_function_calls(x):
 
 
 # Test case 10: Function with assert statement that raises AssertionError
-def func_with_assert_statement(x):
+def func_with_assert_statement(x: Any) -> Any:
     assert x > 0, "x must be greater than zero"
 
 
 # Test case 11: Function with recursive calls that raise exceptions
-def func_recursive(x):
+def func_recursive(x: Any) -> Any:
     if x == 0:
         raise ValueError("x cannot be zero")
     else:
         func_recursive(x - 1)
 
+
 # Test case 12: except Parent Exception
-def func_except_parent_exception(x):
+def func_except_parent_exception(x: Any) -> Any:
     try:
         if x == 0:
             raise ValueError("x cannot be zero")
@@ -108,12 +110,11 @@ def func_except_parent_exception(x):
             raise TypeError("x must be an integer")
     except Exception:
         raise KeyError("Caught a ValueError")
-    
+
 
 # Test case 13: except parent exception with customize Exception
-def func_except_parent_exception_customize(x):
-    class SubValueError(ValueError):
-        ...
+def func_except_parent_exception_customize(x: Any) -> Any:
+    class SubValueError(ValueError): ...
 
     try:
         if x == 0:
@@ -125,14 +126,30 @@ def func_except_parent_exception_customize(x):
 
 
 # Test case 14: except Bare
-def func_except_bare(x):
+def func_except_bare(x: Any) -> Any:
     try:
         if x == 0:
             raise ValueError("x cannot be zero")
         elif x == 1:
             raise TypeError("x must be an integer")
-    except:
+    except:  # noqa: E722
         raise KeyError("Caught a ValueError")
+
+
+# Test case 15: multiple except
+def func_multiple_except_blocks() -> None:
+    try:
+        print("In try block")
+        raise ValueError("Error in try block")  # Raises an exception
+    except ValueError:
+        print("In ValueError except block")
+        raise TypeError("Error in ValueError except block")  # Raises a new exception
+    except TypeError:
+        print("In TypeError except block")
+    except Exception:
+        print("In generic Exception except block")
+    finally:
+        print("In finally block")
 
 
 test_cases = [
@@ -150,10 +167,11 @@ test_cases = [
     (func_except_parent_exception, {"KeyError"}),
     (func_except_parent_exception_customize, {"KeyError"}),
     (func_except_bare, {"KeyError"}),
+    (func_multiple_except_blocks, {"ValueError", "TypeError"}),
 ]
 
 
 @pytest.mark.parametrize("func,expected", test_cases)
-def test_func(func, expected):
+def test_func(func: Callable[..., Any], expected: set[str]) -> None:
     result = detect_function_exceptions(f"{func.__module__}.{func.__name__}")
     assert result == expected, f"Expected {expected}, got {result}"
