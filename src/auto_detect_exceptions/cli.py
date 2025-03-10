@@ -10,13 +10,14 @@ from .exception_analysis import get_unhandled_exceptions
 from .docstring_utils import update_function_docstrings
 
 
-def process_directory(directory: str, modify: bool) -> None:
+def process_directory(directory: str, modify: bool, only_existing: bool) -> None:
     """
     Process a directory, analyzing Python files and optionally modifying them.
 
     Args:
         directory (str): The directory to process.
         modify (bool): If True, modifies files; otherwise, generates a report.
+        only_existing (bool): If True, only updates functions that already have docstrings.
     """
     python_files = find_python_files(directory)
     missing_exceptions = {}
@@ -40,7 +41,9 @@ def process_directory(directory: str, modify: bool) -> None:
 
             if modify:
                 updated_code = update_function_docstrings(
-                    source_code, function_exceptions
+                    source_code,
+                    function_exceptions,
+                    only_existing_docstrings=only_existing,
                 )
                 write_python_file(file_path, updated_code)
 
@@ -84,10 +87,17 @@ def main():
         action="store_true",
         help="Modify files to add missing exception docstrings",
     )
+    parser.add_argument(
+        "--only-existing",
+        action="store_true",
+        help="Only update functions that already have docstrings",
+    )
 
     args = parser.parse_args()
 
-    process_directory(args.directory, modify=args.update)
+    process_directory(
+        args.directory, modify=args.update, only_existing=args.only_existing
+    )
 
 
 if __name__ == "__main__":

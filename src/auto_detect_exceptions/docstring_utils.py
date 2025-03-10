@@ -7,8 +7,13 @@ class DocstringUpdater(cst.CSTTransformer):
     Transformer that updates function docstrings to include missing exceptions.
     """
 
-    def __init__(self, function_exceptions: Dict[str, Set[str]]):
+    def __init__(
+        self,
+        function_exceptions: Dict[str, Set[str]],
+        only_update_existing_docstrings: bool = False,
+    ):
         self.function_exceptions = function_exceptions
+        self.only_update_existing_docstrings = only_update_existing_docstrings
 
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
@@ -27,6 +32,10 @@ class DocstringUpdater(cst.CSTTransformer):
                 existing_docstring = first_stmt.value.value.strip(
                     "\"'"
                 )  # Strip triple quotes
+
+        # If the flag is enabled and the function has no existing docstring, skip modification
+        if self.only_update_existing_docstrings and not existing_docstring:
+            return updated_node
 
         # Generate new exceptions section
         exception_lines = ["Raises:"]
@@ -47,7 +56,7 @@ class DocstringUpdater(cst.CSTTransformer):
             body=[cst.Expr(value=cst.SimpleString(f'"""{new_docstring}"""'))]
         )
 
-        # Insert new docstring into the function body
+        # Ensure updated_node.body.body is a list
         new_body = (
             [new_docstring_node] + list(updated_node.body.body[1:])
             if existing_docstring
@@ -58,7 +67,9 @@ class DocstringUpdater(cst.CSTTransformer):
 
 
 def update_function_docstrings(
-    source_code: str, function_exceptions: Dict[str, Set[str]]
+    source_code: str,
+    function_exceptions: Dict[str, Set[str]],
+    only_update_existing_docstrings: bool = False,
 ) -> str:
     """
     Uses `libcst` to update function docstrings in a Python source file.
@@ -66,10 +77,13 @@ def update_function_docstrings(
     Args:
         source_code (str): The original source code.
         function_exceptions (Dict[str, Set[str]]): A mapping of function names to their exceptions.
+        only_update_existing_docstrings (bool): If True, only add Raises to functions with existing docstrings.
 
     Returns:
         str: The modified source code.
     """
     tree = cst.parse_module(source_code)
-    updated_tree = tree.visit(DocstringUpdater(function_exceptions))
+    updated_tree = tree.visit(
+        DocstringUpdater(function_exceptions, only_update_existing_docstrings)
+    )
     return updated_tree.code
