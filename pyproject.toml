@@ -17,6 +17,8 @@ detect1 = "auto_detect_exceptions.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+libcst = "^1.6.0"
+black = "^25.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
