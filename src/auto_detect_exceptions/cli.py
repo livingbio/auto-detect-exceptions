@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 from .file_utils import find_python_files, read_python_file, write_python_file
 from .ast_utils import (
     parse_python_code,
@@ -43,7 +44,7 @@ def process_directory(directory: str, modify: bool, only_existing: bool) -> None
                 updated_code = update_function_docstrings(
                     source_code,
                     function_exceptions,
-                    only_existing_docstrings=only_existing,
+                    only_update_existing_docstrings=only_existing,
                 )
                 write_python_file(file_path, updated_code)
 
@@ -51,7 +52,7 @@ def process_directory(directory: str, modify: bool, only_existing: bool) -> None
         generate_report(missing_exceptions)
 
 
-def generate_report(missing_exceptions: dict) -> None:
+def generate_report(missing_exceptions: dict[Path, dict[str, set[str]]]) -> None:
     """
     Prints a report of functions missing exception documentation.
 
@@ -71,7 +72,7 @@ def generate_report(missing_exceptions: dict) -> None:
             print(f"    Expected exceptions: {', '.join(exceptions)}")
 
 
-def main():
+def main() -> None:
     """
     Entry point for the CLI tool.
     """
