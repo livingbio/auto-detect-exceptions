@@ -1,9 +1,19 @@
-[tool.poetry]
+[project]
 name = "auto-detect-exceptions"
 version = "0.1.0"
 description = ""
-authors = ["lucemia <lucemia@gmail.com>"]
+authors = [
+    { name = "lucemia", email = "lucemia@gmail.com" },
+]
 readme = "README.md"
+
+[tool.poetry]
+packages = [
+    { include = "auto_detect_exceptions", from = "src" }
+]
+
+[project.scripts]
+detect1 = "auto_detect_exceptions.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"

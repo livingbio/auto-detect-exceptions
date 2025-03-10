@@ -1,13 +1,13 @@
-from typing import Callable, Any
 import importlib.util
 import ast
 from .exception_analyzer import ExceptionVisitor
 
+
 def get_file_path_from_full_path(full_path: str) -> str:
-    module_path, _ = full_path.rsplit('.', 1)  # Split off the function name
+    module_path, _ = full_path.rsplit(".", 1)  # Split off the function name
 
     # Convert module path to a probable file path
-    file_path = module_path.replace('.', '/') + '.py'
+    file_path = module_path.replace(".", "/") + ".py"
 
     # Check if the module is actually installed and find the exact path
     try:
@@ -28,7 +28,7 @@ def analyze_function(node) -> set[str]:
     analyzer.visit(node)
 
 
-def detect_function_exceptions(func: str) -> set[str]: 
+def detect_function_exceptions(func: str) -> set[str]:
     file_path = get_file_path_from_full_path(func)
 
     with open(file_path) as ifile:
@@ -38,7 +38,7 @@ def detect_function_exceptions(func: str) -> set[str]:
 
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
-            if node.name == func.split('.')[-1]:
+            if node.name == func.split(".")[-1]:
                 return analyze_function(node)
-            
+
     raise ModuleNotFoundError()
